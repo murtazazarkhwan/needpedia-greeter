@@ -243,6 +243,8 @@ const Message = ({role, text}: MessageProps) => {
 const Chat = ({
                   functionCallHandler = () => Promise.resolve("")
               }: ChatProps) => {
+    const [tokens, setTokens] = useState<number>(0);
+    const maxTokens = Number(process.env.NEXT_PUBLIC_MAX_TOKENS) || 2000;
     const [userInput, setUserInput] = useState("");
     const [messages, setMessages] = useState<Array<{ role: MessageRole; text: string; }>>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -588,7 +590,7 @@ const Chat = ({
             const result = await fp.get();
             const fingerprint = result.visitorId;
             // Send a request to the backend to check the token
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/tokens`, {
+            const response = await fetch(`${apiUrl}/api/v1/tokens`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -600,6 +602,7 @@ const Chat = ({
             });
 
             const data = await response.json();
+            setTokens(data.tokens); // Update tokens state
 
             if (data.tokens > 0) {
                 // If tokens are valid, proceed with the normal task
@@ -611,11 +614,13 @@ const Chat = ({
                 setUserInput('');
                 scrollToBottom();
             } else {
+                const messageText = `Needpedia Staff: Welcome! This AI is only designed to greet people and answer a few questions. To access our more powerful AI, which has more tokens and can even make posts for you, simply create an account (which is totally free). If you like what you see, feel free to contribute through Patreon [here](https://www.patreon.com/Needpedia).`;
                 setMessages((prevMessages) => [
                     ...prevMessages,
                     {
                         role: 'assistant',
-                        text: 'Your token limit has been exceeded. Please come back in 24 hours, or create an account and log in to Needpedia to continue.'
+                        text: messageText,
+                        isHTML: true
                     }
                 ]);
             }
@@ -794,6 +799,21 @@ const Chat = ({
 
                 {/* Sidebar */}
                 <div className={`${styles.threadsSidebar} ${isSidebarVisible ? styles.visible : ''}`}>
+                    {/* Progress Bar */}
+                    {tokens > 0 && (
+                        <div className={styles.usageContainer}>
+                            <p className={styles.usageText}>
+                                You have used {maxTokens - tokens} of {maxTokens} credits
+                            </p>
+                            <div className={styles.progressBarContainer}>
+                                <div className={styles.progressBar} style={{ width: `${(tokens / maxTokens) * 100}%` }}></div>
+                            </div>
+                            <div className={styles.footerText}>
+                                <span>{tokens} available</span>
+                                <span>{maxTokens - tokens} used</span>
+                            </div>
+                        </div>
+                    )}
                     <button onClick={createNewThread} className={styles.newChatButton}>
                         <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
                              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -887,9 +907,7 @@ const Chat = ({
                     </form>
                 </div>
             </div>
-
         </div>
-
     );
 };
 

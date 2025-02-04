@@ -276,6 +276,40 @@ const Chat = ({
 
 
     useEffect(() => {
+        const checkTokens = async () => {
+            if (!userToken) return;
+
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+                // Get the user's fingerprint
+                const fp = await FingerprintJS.load();
+                const result = await fp.get();
+                const fingerprint = result.visitorId;
+
+                // Send a request to the backend to check the token
+                const response = await fetch(`${apiUrl}/api/v1/tokens`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fingerprint: fingerprint,
+                        utoken: userToken
+                    }),
+                });
+
+                const data = await response.json();
+                setTokens(data.tokens); // Update tokens state
+            } catch (error) {
+                console.error('Error checking tokens:', error);
+            }
+        };
+
+        checkTokens();
+    }, [userToken]);
+
+    useEffect(() => {
         if (!userToken || isInitialized) return;
 
         const loadSavedData = async () => {

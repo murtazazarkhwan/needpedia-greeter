@@ -244,7 +244,10 @@ const Chat = ({
                   functionCallHandler = () => Promise.resolve("")
               }: ChatProps) => {
     const [tokens, setTokens] = useState<number>(0);
+<<<<<<< Updated upstream
     const maxTokens = Number(process.env.NEXT_PUBLIC_MAX_TOKENS) || 2000;
+=======
+>>>>>>> Stashed changes
     const [userInput, setUserInput] = useState("");
     const [messages, setMessages] = useState<Array<{ role: MessageRole; text: string; }>>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -402,7 +405,7 @@ const Chat = ({
             // Initialize with a welcome message instead of fetching messages
             const initialMessage = {
                 role: "assistant" as MessageRole,
-                text: "👋 Welcome! How can I help you today with Needpedia?"
+                text:  process.env.NEXT_PUBLIC_INITIAL_MESSAGE_TEXT || "👋Welcome! How can I help you today with Needpedia?"
             };
 
             const newThread: Thread = {
@@ -777,6 +780,7 @@ const Chat = ({
 
 
     return (
+<<<<<<< Updated upstream
         <div className={styles.chatWrapper}>
             <div className={styles.chatHeader}>
                 <button onClick={toggleSidebar} className={styles.toggleSidebarButton}>
@@ -815,41 +819,84 @@ const Chat = ({
                         </div>
                     )}
                     <button onClick={createNewThread} className={styles.newChatButton}>
+=======
+        <div className={`${styles.chatWrapper} ${new URLSearchParams(window.location.search).get('sidebar') === 'false' ? styles.noBorders : ''}`}>
+            {new URLSearchParams(window.location.search).get('sidebar') !== 'false' && (
+                <div className={styles.chatHeader}>
+                    <button onClick={toggleSidebar} className={styles.toggleSidebarButton}>
+>>>>>>> Stashed changes
                         <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
                              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M5 12h14m-7 7V5"/>
+                            <path stroke="currentColor"
+                                  d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.02m0 4H5"/>
                         </svg>
-                        New Chat
                     </button>
-                    <br/>
-                    {threads.length > 0 ? (
-                        threads.map(thread => (
-                            <div
-                                key={thread.id}
-                                className={`${styles.threadItem} ${
-                                    thread.id === currentThreadId ? styles.activeThread : ''
-                                    }`}
-                                onClick={() => {
-                                    switchThread(thread.id);
-                                    setIsSidebarVisible(false);
-                                }}
-                            >
-                                <div className={styles.threadTitle}>
-                                    {thread.title}
+                    <h2>Needpedia Chatbot</h2>
+                </div>
+            )}
+
+            <div className={styles.chatLayout}>
+                {new URLSearchParams(window.location.search).get('sidebar') !== 'false' && (
+                    <div
+                        className={`${styles.overlay} ${isSidebarVisible ? styles.visible : ''}`}
+                        onClick={handleOverlayClick}
+                    />
+                )}
+
+                {new URLSearchParams(window.location.search).get('sidebar') !== 'false' && (
+                    <div className={`${styles.threadsSidebar} ${isSidebarVisible ? styles.visible : ''}`}>
+                        {/* Progress Bar */}
+                        {tokens > 0 && (
+                            <div className={styles.usageContainer}>
+                                <p className={styles.usageText}>
+                                    You have used {maxTokens - tokens} of {maxTokens} credits
+                                </p>
+                                <div className={styles.progressBarContainer}>
+                                    <div className={styles.progressBar} style={{ width: `${(tokens / maxTokens) * 100}%` }}></div>
                                 </div>
-                                <div className={styles.threadLastMessage}>
-                                    {thread.lastMessage || 'New conversation'}
-                                </div>
-                                <div className={styles.threadTimestamp}>
-                                    {new Date(thread.lastUpdated).toLocaleString()}
+                                <div className={styles.footerText}>
+                                    <span>{tokens} available</span>
+                                    <span>{maxTokens - tokens} used</span>
                                 </div>
                             </div>
-                        ))
-                    ) : (
-                        <div className={styles.noThreads}>No conversations yet</div>
-                    )}
-                </div>
+                        )}
+                        <button onClick={createNewThread} className={styles.newChatButton}>
+                            <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor"
+                                      d="M5 12h14m-7 7V5"/>
+                            </svg>
+                            New Chat
+                        </button>
+                        <br/>
+                        {threads.length > 0 ? (
+                            threads.map(thread => (
+                                <div
+                                    key={thread.id}
+                                    className={`${styles.threadItem} ${
+                                        thread.id === currentThreadId ? styles.activeThread : ''
+                                        }`}
+                                    onClick={() => {
+                                        switchThread(thread.id);
+                                        setIsSidebarVisible(false);
+                                    }}
+                                >
+                                    <div className={styles.threadTitle}>
+                                        {thread.title}
+                                    </div>
+                                    <div className={styles.threadLastMessage}>
+                                        {thread.lastMessage || 'New conversation'}
+                                    </div>
+                                    <div className={styles.threadTimestamp}>
+                                        {new Date(thread.lastUpdated).toLocaleString()}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className={styles.noThreads}>No conversations yet</div>
+                        )}
+                    </div>
+                )}
 
                 {/* Main chat area */}
                 <div className={styles.chatContainer}>

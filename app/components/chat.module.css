@@ -336,6 +336,7 @@
         display: block;
     }
 }
+<<<<<<< Updated upstream
 .usageContainer {
     padding: 0.75rem;
     border-radius: 0.5rem;
@@ -369,4 +370,9 @@
     font-size: 0.75rem;
     color: #555;
     margin-top: 0.5rem;
+=======
+.noBorders {
+    border: none !important;
+    box-shadow: none !important;
+>>>>>>> Stashed changes
 }

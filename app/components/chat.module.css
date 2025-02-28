@@ -370,3 +370,7 @@
     color: #555;
     margin-top: 0.5rem;
 }
+.noBorders {
+    border: none !important;
+    box-shadow: none !important;
+}

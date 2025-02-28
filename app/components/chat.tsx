@@ -76,7 +76,7 @@ const fetchThreadsFromBackend = async (userToken: string): Promise<{ threads: st
         return data;
     } catch (error) {
         console.error('Error fetching threads:', error);
-        return { threads: [] };
+        return {threads: []};
     }
 };
 
@@ -244,10 +244,7 @@ const Chat = ({
                   functionCallHandler = () => Promise.resolve("")
               }: ChatProps) => {
     const [tokens, setTokens] = useState<number>(0);
-<<<<<<< Updated upstream
     const maxTokens = Number(process.env.NEXT_PUBLIC_MAX_TOKENS) || 2000;
-=======
->>>>>>> Stashed changes
     const [userInput, setUserInput] = useState("");
     const [messages, setMessages] = useState<Array<{ role: MessageRole; text: string; }>>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -405,7 +402,7 @@ const Chat = ({
             // Initialize with a welcome message instead of fetching messages
             const initialMessage = {
                 role: "assistant" as MessageRole,
-                text:  process.env.NEXT_PUBLIC_INITIAL_MESSAGE_TEXT || "👋Welcome! How can I help you today with Needpedia?"
+                text: process.env.NEXT_PUBLIC_INITIAL_MESSAGE_TEXT || "👋Welcome! How can I help you today with Needpedia?"
             };
 
             const newThread: Thread = {
@@ -778,53 +775,11 @@ const Chat = ({
         setIsSidebarVisible(false);
     };
 
-
     return (
-<<<<<<< Updated upstream
-        <div className={styles.chatWrapper}>
-            <div className={styles.chatHeader}>
-                <button onClick={toggleSidebar} className={styles.toggleSidebarButton}>
-                    <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
-                              d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5"/>
-                    </svg>
-                </button>
-                <h2>Needpedia Chatbot</h2>
-            </div>
-
-            <div className={styles.chatLayout}>
-                {/* Overlay for mobile */}
-
-                <div
-                    className={`${styles.overlay} ${isSidebarVisible ? styles.visible : ''}`}
-                    onClick={handleOverlayClick}
-                />
-
-                {/* Sidebar */}
-                <div className={`${styles.threadsSidebar} ${isSidebarVisible ? styles.visible : ''}`}>
-                    {/* Progress Bar */}
-                    {tokens > 0 && (
-                        <div className={styles.usageContainer}>
-                            <p className={styles.usageText}>
-                                You have used {maxTokens - tokens} of {maxTokens} credits
-                            </p>
-                            <div className={styles.progressBarContainer}>
-                                <div className={styles.progressBar} style={{ width: `${(tokens / maxTokens) * 100}%` }}></div>
-                            </div>
-                            <div className={styles.footerText}>
-                                <span>{tokens} available</span>
-                                <span>{maxTokens - tokens} used</span>
-                            </div>
-                        </div>
-                    )}
-                    <button onClick={createNewThread} className={styles.newChatButton}>
-=======
         <div className={`${styles.chatWrapper} ${new URLSearchParams(window.location.search).get('sidebar') === 'false' ? styles.noBorders : ''}`}>
             {new URLSearchParams(window.location.search).get('sidebar') !== 'false' && (
                 <div className={styles.chatHeader}>
                     <button onClick={toggleSidebar} className={styles.toggleSidebarButton}>
->>>>>>> Stashed changes
                         <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
                              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor"

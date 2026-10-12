@@ -712,14 +712,20 @@ const Chat = ({
 
                 if (data.tokens <= 0) {
                     const messageText = `Needpedia Staff: Welcome! This AI is only designed to greet people and answer a few questions. To access our more powerful AI, which has more tokens and can even make posts for you, simply create an account (which is totally free). If you like what you see, feel free to contribute through Patreon [here](https://www.patreon.com/Needpedia).`;
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        {
-                            role: 'assistant',
-                            text: messageText,
-                            isHTML: true
+                    setMessages((prevMessages) => {
+                        const lastMessage = prevMessages[prevMessages.length - 1];
+                        if (lastMessage && lastMessage.role === 'assistant' && lastMessage.text === messageText) {
+                            return prevMessages;
                         }
-                    ]);
+                        return [
+                            ...prevMessages,
+                            {
+                                role: 'assistant',
+                                text: messageText,
+                                isHTML: true
+                            }
+                        ];
+                    });
                     return;
                 }
             }

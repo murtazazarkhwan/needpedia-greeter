@@ -21,8 +21,19 @@ export function cleanAIOutput(text: string): string {
   // Remove leading/trailing whitespace per line
   s = s.split("\n").map(l => l.trim()).join("\n");
 
+  // Protect markdown links: the paren strip below would otherwise delete
+  // every link destination (e.g. Florence signup links).
+  const mdLinks: string[] = [];
+  s = s.replace(/\[([^\]]*)\]\(([^)\s]+)\)/g, (_m, label, url) => {
+    mdLinks.push(`[${label}](${url})`);
+    return `__MDLINK${mdLinks.length - 1}__`;
+  });
+
   // Strip parenthesized content (citations, references)
   s = s.replace(/\([^)]*\)/g, "");
+
+  // Restore protected markdown links
+  s = s.replace(/__MDLINK(\d+)__/g, (_m, i) => mdLinks[Number(i)]);
 
   // Strip whole lines wrapped in markdown italic/bold (roleplay narration)
   s = s.replace(/^\s*\*{1,2}[^*].*\*{1,2}\s*$/gm, "");

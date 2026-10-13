@@ -218,11 +218,19 @@ const UserMessage = ({text}: { text: string }) => {
     </div>;
 };
 
-const LinkRenderer = ({href, children}) => (
-    <a href={href} target="_blank" rel="noopener noreferrer">
-        {children}
-    </a>
-);
+const LinkRenderer = ({href, children}) => {
+    // Signup links must replace the embedding Needpedia page, not open
+    // inside the Florence iframe or a new tab. Absolute URL from our own
+    // tool only — a crafted external URL can't match the prefix.
+    const isSignupLink = (href || "").startsWith(
+        (process.env.NEXT_PUBLIC_API_BASE_URL || "") + "/users/sign_up?draft="
+    );
+    return (
+        <a href={href} target={isSignupLink ? "_parent" : "_blank"} rel="noopener noreferrer">
+            {children}
+        </a>
+    );
+};
 
 const AssistantMessage = ({text}: { text: string }) => {
     return (
@@ -504,6 +512,7 @@ const Chat = ({
     const doChatCompletion = async (text: string) => {
         const apiMessages = getApiMessages(text);
         let isFirstContent = true;
+        let finishHandled = false;
         const toolCallAccumulators: Record<number, any> = {};
 
         try {
@@ -555,12 +564,18 @@ const Chat = ({
                     }
                 }
 
+                // Some providers repeat the terminal finish_reason chunk —
+                // handle each terminal event exactly once per stream.
+                if (choice.finish_reason && finishHandled) return;
+
                 if (choice.finish_reason === "tool_calls") {
+                    finishHandled = true;
                     const toolCalls = Object.values(toolCallAccumulators);
                     handleToolCalls(toolCalls, apiMessages, text);
                 }
 
                 if (choice.finish_reason === "stop") {
+                    finishHandled = true;
                     setInputDisabled(false);
                     refreshTokens();
                     // Persist messages to Rails backend
@@ -637,6 +652,7 @@ const Chat = ({
             const decoder = new TextDecoder();
             let buffer = "";
             let isFirstContent = true;
+            let stopHandled = false;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -665,6 +681,8 @@ const Chat = ({
                         }
 
                         if (choice.finish_reason === "stop") {
+                            if (stopHandled) continue;
+                            stopHandled = true;
                             setInputDisabled(false);
                             refreshTokens();
                             // Persist messages to Rails backend after tool call follow-up

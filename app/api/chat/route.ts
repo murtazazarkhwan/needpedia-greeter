@@ -1,4 +1,5 @@
 import { getOpenAIClient } from "@/app/openai";
+import type { ChatCompletionTool } from "openai/resources/chat/completions";
 
 export const runtime = "nodejs";
 
@@ -86,6 +87,27 @@ async function getMasterPrompt(): Promise<string> {
   }
 }
 
+// collect_signup_info: creates a one-time, short-lived draft on Needpedia.
+// Only name + email ever leave the chat — passwords stay on the signup page.
+const TOOLS: ChatCompletionTool[] = [
+  {
+    type: "function",
+    function: {
+      name: "collect_signup_info",
+      description:
+        "Save the visitor's name and email, then return a one-time signup link. Call ONLY after the visitor has explicitly provided BOTH their full name and email address in this conversation. Never ask for or pass passwords.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Full name the visitor provided" },
+          email: { type: "string", description: "Email address the visitor provided" },
+        },
+        required: ["name", "email"],
+      },
+    },
+  },
+];
+
 export async function POST(request: Request) {
   const { messages } = await request.json();
   const openai = getOpenAIClient();
@@ -102,6 +124,8 @@ export async function POST(request: Request) {
   const stream = await openai.chat.completions.create({
     model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
     messages: fullMessages,
+    tools: TOOLS,
+    temperature: 0.2,
     stream: true,
   });
 

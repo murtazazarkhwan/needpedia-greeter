@@ -39,6 +39,28 @@ const Home = () => {
                 const data = await res.json();
                 return JSON.stringify(data);
             }
+
+            if (call?.function?.name === "collect_signup_info") {
+                let name: string, email: string;
+                try {
+                    ({ name, email } = JSON.parse(call.function.arguments));
+                } catch {
+                    return JSON.stringify({ error: "invalid_arguments", detail: "name and email must be valid JSON" });
+                }
+                if (typeof name !== "string" || typeof email !== "string") {
+                    return JSON.stringify({ error: "invalid_arguments", detail: "name and email must be strings" });
+                }
+                const res = await fetch("/api/signup-draft", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Signup link creation failed");
+                }
+                return JSON.stringify({ signup_url: data.url });
+            }
         } catch (error) {
             console.error('Function call handler error:', error);
         }

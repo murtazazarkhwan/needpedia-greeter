@@ -421,9 +421,28 @@ const Chat = ({
         try {
             const threadId = crypto.randomUUID();
 
+            // First-time visitors get the server-managed FlorenceFirstTime
+            // greeting (Rails passes &firsttime=true when the user has no
+            // threads). Cached at the /api/first-message route; fallback to
+            // the default welcome when the prompt is unavailable.
+            let initialText = process.env.NEXT_PUBLIC_INITIAL_MESSAGE_TEXT || "👋Welcome! How can I help you today with Needpedia?";
+            if (getUrlParameter('firsttime') === 'true') {
+                try {
+                    const res = await fetch('/api/first-message');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (typeof data.message === 'string' && data.message.trim()) {
+                            initialText = data.message;
+                        }
+                    }
+                } catch {
+                    // Keep the default welcome text on fetch failure.
+                }
+            }
+
             const initialMessage = {
                 role: "assistant" as MessageRole,
-                text: process.env.NEXT_PUBLIC_INITIAL_MESSAGE_TEXT || "👋Welcome! How can I help you today with Needpedia?"
+                text: initialText
             };
 
             const newThread: Thread = {
